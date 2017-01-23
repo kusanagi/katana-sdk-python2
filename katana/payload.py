@@ -73,6 +73,7 @@ FIELD_MAPPINGS = {
     'files': 'f',
     'format': 'f',
     'free': 'f',
+    'fallback': 'F',
     'fallbacks': 'F',
     'fields': 'F',
     'gateway': 'g',
