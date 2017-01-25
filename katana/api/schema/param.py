@@ -100,7 +100,7 @@ class ParamSchema(object):
 
         """
 
-        return self.__payload.path_exists('default')
+        return self.__payload.path_exists('default_value')
 
     def get_default_value(self):
         """Get default value for parameter.
@@ -109,7 +109,7 @@ class ParamSchema(object):
 
         """
 
-        return self.__payload.get('default', '')
+        return self.__payload.get('default_value', '')
 
     def is_required(self):
         """Check if parameter is required.
@@ -121,26 +121,20 @@ class ParamSchema(object):
         return self.__payload.get('required', False)
 
     def get_items(self):
-        """Get JSON items defined for the parameter.
+        """Get JSON schema with items object definition.
 
-        An empty string is returned when parameter type is not "array".
+        An empty dicitonary is returned when parameter is not an "array",
+        otherwise the result contains a dictionary with a JSON schema
+        definition.
 
-        :rtype: list
+        :rtype: dict
 
         """
 
         if self.get_type() != 'array':
-            return ''
+            return {}
 
-        if not self.__payload.path_exists('items'):
-            return ''
-
-        try:
-            # Items must be a valid JSON string
-            return json.loads(self.__payload.get('items'))
-        except:
-            LOG.exception('Value for "items" is not valid JSON')
-            return ''
+        return self.__payload.get('items', {})
 
     def get_max(self):
         """Get maximum value for parameter.
@@ -149,7 +143,7 @@ class ParamSchema(object):
 
         """
 
-        return self.__payload.get('maximum', sys.maxsize)
+        return self.__payload.get('max', sys.maxsize)
 
     def is_exclusive_max(self):
         """Check if max value is inclusive.
@@ -160,10 +154,10 @@ class ParamSchema(object):
 
         """
 
-        if not self.__payload.path_exists('maximum'):
+        if not self.__payload.path_exists('max'):
             return False
 
-        return self.__payload.get('exclusive_maximum', False)
+        return self.__payload.get('exclusive_max', False)
 
     def get_min(self):
         """Get minimum value for parameter.
@@ -172,7 +166,7 @@ class ParamSchema(object):
 
         """
 
-        return self.__payload.get('maximum', -sys.maxsize - 1)
+        return self.__payload.get('min', -sys.maxsize - 1)
 
     def is_exclusive_min(self):
         """Check if minimum value is inclusive.
@@ -183,10 +177,10 @@ class ParamSchema(object):
 
         """
 
-        if not self.__payload.path_exists('minimum'):
+        if not self.__payload.path_exists('min'):
             return False
 
-        return self.__payload.get('exclusive_minimum', False)
+        return self.__payload.get('exclusive_min', False)
 
     def get_max_length(self):
         """Get max length defined for the parameter.
@@ -197,7 +191,7 @@ class ParamSchema(object):
 
         """
 
-        return self.__payload.get('maximum_length', -1)
+        return self.__payload.get('max_length', -1)
 
     def get_min_length(self):
         """Get minimum length defined for the parameter.
@@ -208,7 +202,7 @@ class ParamSchema(object):
 
         """
 
-        return self.__payload.get('minimum_length', -1)
+        return self.__payload.get('min_length', -1)
 
     def get_max_items(self):
         """Get maximum number of items allowed for the parameter.
@@ -222,7 +216,7 @@ class ParamSchema(object):
         if self.get_type() != 'array':
             return -1
 
-        return self.__payload.get('maximum_items', -1)
+        return self.__payload.get('max_items', -1)
 
     def get_min_items(self):
         """Get minimum number of items allowed for the parameter.
@@ -236,7 +230,7 @@ class ParamSchema(object):
         if self.get_type() != 'array':
             return -1
 
-        return self.__payload.get('minimum_items', -1)
+        return self.__payload.get('min_items', -1)
 
     def has_unique_items(self):
         """Check if param must contain a set of unique items.
