@@ -66,7 +66,7 @@ class FileSchema(object):
 
         """
 
-        return self.__payload.get('maximum', sys.maxsize)
+        return self.__payload.get('max', sys.maxsize)
 
     def is_exclusive_max(self):
         """Check if maximum size is inclusive.
@@ -77,10 +77,10 @@ class FileSchema(object):
 
         """
 
-        if not self.__payload.path_exists('maximum'):
+        if not self.__payload.path_exists('max'):
             return False
 
-        return self.__payload.get('exclusive_maximum', False)
+        return self.__payload.get('exclusive_max', False)
 
     def get_min(self):
         """Get minimum file size allowed for the parameter.
@@ -91,7 +91,7 @@ class FileSchema(object):
 
         """
 
-        return self.__payload.get('minimum', 0)
+        return self.__payload.get('min', 0)
 
     def is_exclusive_min(self):
         """Check if minimum size is inclusive.
@@ -102,10 +102,10 @@ class FileSchema(object):
 
         """
 
-        if not self.__payload.path_exists('minimum'):
+        if not self.__payload.path_exists('min'):
             return False
 
-        return self.__payload.get('exclusive_minimum', False)
+        return self.__payload.get('exclusive_min', False)
 
     def get_http_schema(self):
         """Get HTTP file param schema.

@@ -14,6 +14,7 @@ from __future__ import absolute_import
 
 import logging
 
+from ..payload import get_path
 from ..payload import Payload
 
 __license__ = "MIT"
@@ -54,9 +55,9 @@ def payload_to_param(payload):
     """
 
     return Param(
-        payload.get('name'),
-        value=payload.get('value'),
-        type=payload.get('type'),
+        get_path(payload, 'name'),
+        value=get_path(payload, 'value'),
+        type=get_path(payload, 'type'),
         exists=True,
         )
 
@@ -97,7 +98,7 @@ class Param(object):
             self.__type = TYPE_STRING
         elif not self.__type:
             self.__type = self.resolve_type(self.__value)
-        elif self.__type not in TYPE_CLASSES:
+        elif (self.__value is not None) and self.__type not in TYPE_CLASSES:
             self.__type = TYPE_STRING
 
     @classmethod
