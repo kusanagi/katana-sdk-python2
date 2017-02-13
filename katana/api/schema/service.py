@@ -21,7 +21,7 @@ __copyright__ = "Copyright (c) 2016-2017 KUSANAGI S.L. (http://kusanagi.io)"
 
 
 class ServiceSchema(object):
-    """Service schema in the platform."""
+    """Service schema in the framework."""
 
     def __init__(self, name, version, payload):
         self.__name = name
@@ -106,7 +106,7 @@ class ServiceSchema(object):
 
 
 class HttpServiceSchema(object):
-    """HTTP semantics of a Service schema in the platform."""
+    """HTTP semantics of a Service schema in the framework."""
 
     def __init__(self, payload):
         self.__payload = Payload(payload)

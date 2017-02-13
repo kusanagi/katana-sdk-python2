@@ -51,7 +51,7 @@ class Transport(object):
     def get_origin_service(self):
         """Get transport origin service.
 
-        Service origin is a tuple with origin name and version.
+        Service origin is a list with origin name, version and action.
 
         :rtype: list
 

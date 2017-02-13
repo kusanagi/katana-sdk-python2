@@ -25,7 +25,7 @@ LOG = logging.getLogger(__name__)
 
 
 class ParamSchema(object):
-    """Parameter schema in the platform."""
+    """Parameter schema in the framework."""
 
     def __init__(self, name, payload):
         self.__name = name
@@ -272,7 +272,7 @@ class ParamSchema(object):
 
 
 class HttpParamSchema(object):
-    """HTTP semantics of a parameter schema in the platform."""
+    """HTTP semantics of a parameter schema in the framework."""
 
     def __init__(self, name, payload):
         self.__name = name

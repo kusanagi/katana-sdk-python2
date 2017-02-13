@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 
 
 class FileSchema(object):
-    """File parameter schema in the platform."""
+    """File parameter schema in the framework."""
 
     def __init__(self, name, payload):
         self.__name = name
@@ -118,7 +118,7 @@ class FileSchema(object):
 
 
 class HttpFileSchema(object):
-    """HTTP semantics of a file parameter schema in the platform."""
+    """HTTP semantics of a file parameter schema in the framework."""
 
     def __init__(self, name, payload):
         self.__name = name
