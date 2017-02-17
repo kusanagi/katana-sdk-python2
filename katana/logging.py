@@ -108,7 +108,3 @@ def setup_katana_logging(level=logging.INFO):
         handler.setFormatter(logging.Formatter())  # No format is applied
         logger.addHandler(handler)
         logger.propagate = False
-
-    # Setup other loggers
-    logger = logging.getLogger('asyncio')
-    logger.setLevel(logging.ERROR)

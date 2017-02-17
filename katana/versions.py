@@ -63,7 +63,9 @@ class VersionString(object):
 
         if '*' in self.__version:
             # Create a pattern to be use for cmparison
-            self.__pattern = re.compile(re.sub(r'\*+', '[^*.]+', self.version))
+            self.__pattern = re.compile(
+                r'^{}$'.format(re.sub(r'\*+', '[^*.]+', self.version))
+                )
         else:
             self.__pattern = None
 
@@ -125,13 +127,9 @@ class VersionString(object):
             for sub1, sub2 in izip_longest(part1.split('-'), part2.split('-')):
                 # One of the sub parts is None
                 if sub1 is None or sub2 is None:
-                    result = cls.compare_none(sub1, sub2)
-                    if not result:
-                        # Sub parts are equal, continue with next part
-                        break
-
-                    # Sub parts are different
-                    return result
+                    # Sub parts are different, because one have a
+                    # value and the other not.
+                    return cls.compare_none(sub1, sub2)
 
                 # Both sub parts have a value
                 result = cls.compare_sub_parts(sub1, sub2)
@@ -139,14 +137,11 @@ class VersionString(object):
                     # Sub parts are not equal
                     return result
 
-        # By default return that versions are equal
-        return 0
-
     def match(self, version):
         if not self.pattern:
             return self.version == version
         else:
-            return self.pattern.fullmatch(version) is not None
+            return self.pattern.match(version) is not None
 
     def resolve(self, versions):
         valid_versions = [ver for ver in versions if self.match(ver)]

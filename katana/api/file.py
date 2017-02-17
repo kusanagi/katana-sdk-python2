@@ -12,12 +12,12 @@ file that was distributed with this source code.
 
 from __future__ import absolute_import
 
+import httplib
 import logging
 import mimetypes
 import os
 import urllib2
 
-from httplib import HTTPConnection
 from urlparse import urlparse
 
 from ..payload import get_path
@@ -196,7 +196,7 @@ class File(object):
             # Make a HEAD request to check that file exists
             part = urlparse(self.__path)
             try:
-                conn = HTTPConnection(part.netloc, timeout=2)
+                conn = httplib.HTTPConnection(part.netloc, timeout=2)
                 conn.request('HEAD', part.path, headers=headers)
                 response = conn.getresponse()
                 exists = response.status == 200

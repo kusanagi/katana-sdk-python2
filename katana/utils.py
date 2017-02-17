@@ -9,6 +9,8 @@ For the full copyright and license information, please view the LICENSE
 file that was distributed with this source code.
 
 """
+from __future__ import absolute_import
+
 import json
 import os
 import re
@@ -255,7 +257,12 @@ def set_path(item, path, value, mappings=None, delimiter=DELIMITER):
 
 def delete_path(item, path, mappings=None, delimiter=DELIMITER):
     try:
-        name, path = path.split(delimiter, 1)
+        parts = path.split(delimiter, 1)
+        if len(parts) >= 2:
+            name, path = (parts[0], parts[1:])
+        else:
+            name, path = (parts[0], [])
+
         # Skip mappings for names starting with "!"
         if name and name[0] == '!':
             name = name[1:]
@@ -316,8 +323,8 @@ def merge(from_value, to_value, mappings=None, lists=False):
         # dict add the value from the original dict.
         if name not in to_value:
             # Use mapped name, when available, to save value
-            if name == key and mappings:
-                name = mappings.get(name, name)
+            # if name == key and mappings:
+            #     name = mappings.get(name, name)
 
             # Add new value to destination and continue with next value
             to_value[name] = value
@@ -426,7 +433,7 @@ class LookupDict(dict):
 
         return get_path(self, path, default, self.__mappings, delimiter)
 
-    def get_many(self, delimiter=DELIMITER, *paths):
+    def get_many(self, *paths, **kwargs):
         """Get multiple values by key path.
 
         KeyError is raised when no default value is given.
@@ -441,6 +448,8 @@ class LookupDict(dict):
         :rtype: list
 
         """
+
+        delimiter = kwargs.get('delimiter', DELIMITER)
 
         result = []
         for path in paths:

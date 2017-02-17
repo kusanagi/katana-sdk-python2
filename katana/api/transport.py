@@ -269,6 +269,8 @@ class Transport(object):
 
             return result
 
+        return transactions
+
     def get_errors(self, address=None, service=None):
         """Gets the errors from the Transport.
 
