@@ -50,8 +50,28 @@ def test_api_base(mocker):
     assert api.get_variable('foo') == variables['foo']
 
 
+def test_api_base_get_services(registry):
+    api = base.Api(**{
+        'component': None,
+        'path': '/path/to/file.py',
+        'name': 'dummy',
+        'version': '1.0',
+        'framework_version': '1.0.0',
+        })
+
+    # Get services is empty when there are no service mappings
+    assert api.get_services() == []
+
+    # Add data to registry
+    svc_name = 'foo'
+    svc_version = '1.0.0'
+    registry.update_registry({svc_name: {svc_version: {}}})
+
+    # Get services must return service name and version
+    assert api.get_services() == [{'name': svc_name, 'version': svc_version}]
+
+
 def test_api_base_get_service_schema(mocker):
-    mocker.patch('katana.schema.SchemaRegistry')
     mocker.patch('katana.schema.SchemaRegistry')
 
     # Get the mocked SchemaRegistry
