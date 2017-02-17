@@ -9,13 +9,12 @@ For the full copyright and license information, please view the LICENSE
 file that was distributed with this source code.
 
 """
-
 from __future__ import absolute_import
 
 import re
 
 from functools import cmp_to_key
-from itertools import zip_longest
+from itertools import izip_longest
 
 from .errors import KatanaError
 
@@ -118,12 +117,12 @@ class VersionString(object):
         if ver1 == ver2:
             return 0
 
-        for part1, part2 in zip_longest(ver1.split('.'), ver2.split('.')):
+        for part1, part2 in izip_longest(ver1.split('.'), ver2.split('.')):
             # One of the parts is None
             if part1 is None or part2 is None:
                 return cls.compare_none(part1, part2)
 
-            for sub1, sub2 in zip_longest(part1.split('-'), part2.split('-')):
+            for sub1, sub2 in izip_longest(part1.split('-'), part2.split('-')):
                 # One of the sub parts is None
                 if sub1 is None or sub2 is None:
                     result = cls.compare_none(sub1, sub2)

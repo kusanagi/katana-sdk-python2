@@ -15,10 +15,10 @@ from __future__ import absolute_import
 import logging
 import mimetypes
 import os
-import urllib.request
+import urllib2
 
-from http.client import HTTPConnection
-from urllib.parse import urlparse
+from httplib import HTTPConnection
+from urlparse import urlparse
 
 from ..payload import get_path
 from ..payload import Payload
@@ -241,11 +241,11 @@ class File(object):
             if self.__token:
                 headers['X-Token'] = self.__token
 
-            request = urllib.request.Request(self.__path, headers=headers)
+            request = urllib2.Request(self.__path, headers=headers)
 
             # Read file contents from remote file server
             try:
-                with urllib.request.urlopen(request) as file:
+                with urllib2.urlopen(request) as file:
                     return file.read()
             except:
                 LOG.exception('Unable to read file: %s', self.__path)

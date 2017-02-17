@@ -9,7 +9,6 @@ For the full copyright and license information, please view the LICENSE
 file that was distributed with this source code.
 
 """
-
 import json
 import os
 import re
@@ -256,7 +255,7 @@ def set_path(item, path, value, mappings=None, delimiter=DELIMITER):
 
 def delete_path(item, path, mappings=None, delimiter=DELIMITER):
     try:
-        name, *path = path.split(delimiter, 1)
+        name, path = path.split(delimiter, 1)
         # Skip mappings for names starting with "!"
         if name and name[0] == '!':
             name = name[1:]
@@ -427,7 +426,7 @@ class LookupDict(dict):
 
         return get_path(self, path, default, self.__mappings, delimiter)
 
-    def get_many(self, *paths, delimiter=DELIMITER):
+    def get_many(self, delimiter=DELIMITER, *paths):
         """Get multiple values by key path.
 
         KeyError is raised when no default value is given.

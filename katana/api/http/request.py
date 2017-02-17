@@ -13,7 +13,7 @@ file that was distributed with this source code.
 from __future__ import absolute_import
 
 from itertools import chain
-from urllib.parse import urlparse
+from urlparse import urlparse
 
 from ..file import File
 from ...utils import MultiDict
