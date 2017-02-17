@@ -1,0 +1,11 @@
+# Development requirements file for pip
+mock
+pytest
+pytest-mock
+pytest-cov
+sphinx
+sphinx_rtd_theme
+pylint
+pylama
+click
+coverage
