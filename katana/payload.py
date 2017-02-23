@@ -128,6 +128,7 @@ FIELD_MAPPINGS = {
     'rollback': 'r',
     'remote_calls': 'rc',
     'response': 'R',
+    'return': 'R',
     'schema': 's',
     'schemes': 's',
     'scope': 's',
