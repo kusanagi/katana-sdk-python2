@@ -23,6 +23,7 @@ from ..payload import CommandPayload
 from ..payload import ErrorPayload
 from ..payload import get_path
 from ..payload import Payload
+from ..payload import TRANSPORT_MERGEABLE_PATHS
 from ..utils import ipc
 from ..utils import nomap
 from ..serialization import pack
@@ -179,8 +180,8 @@ def runtime_call(address, transport, action, callee, **kwargs):
     :raises: ApiError
     :raises: RuntimeCallError
 
-    :returns: The return value for the call.
-    :rtype: object
+    :returns: The transport and the return value for the call.
+    :rtype: tuple
 
     """
 
@@ -232,7 +233,8 @@ def runtime_call(address, transport, action, callee, **kwargs):
     if payload.path_exists('error'):
         raise ApiError(payload.get('error/message'))
 
-    return payload.get('command_reply/result/return')
+    result = payload.get('command_reply/result')
+    return (get_path(result, 'transport'), get_path(result, 'return'))
 
 
 class Action(Api):
@@ -891,13 +893,25 @@ class Action(Api):
                 )
             raise ApiError(msg)
 
-        return runtime_call(
+        transport, result = runtime_call(
             address,
             self.__transport,
             self.get_action_name(),
             [service, version, action],
             **kwargs
             )
+
+        # Clear default to succesfully merge dictionaries. Without
+        # this merge would be done with a default value that is not
+        # part of the payload.
+        self.__transport.set_defaults({})
+        for path in TRANSPORT_MERGEABLE_PATHS:
+            value = get_path(transport, path, None)
+            # Don't merge empty values
+            if value:
+                self.__transport.merge(path, value)
+
+        return result
 
     def defer_call(self, service, version, action, params=None, files=None):
         """Register a deferred call to a service.
