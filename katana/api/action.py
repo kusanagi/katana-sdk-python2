@@ -955,7 +955,8 @@ class Action(Api):
         payload = Payload().set_many({
             'name': service,
             'version': version,
-            'action': action,
+            'callee': action,
+            'action': self.get_action_name(),
             })
         if params:
             payload.set('params', parse_params(params))
@@ -1012,7 +1013,8 @@ class Action(Api):
             'gateway': address,
             'name': service,
             'version': version,
-            'action': action,
+            'callee': action,
+            'action': self.get_action_name(),
             })
 
         timeout = kwargs.get('timeout')
