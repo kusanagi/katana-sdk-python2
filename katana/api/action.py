@@ -806,8 +806,8 @@ class Action(Api):
         payload = Payload().set_many({
             'name': self.get_name(),
             'version': self.get_version(),
-            'action': self.get_action_name(),
-            'callee': action,
+            'caller': self.get_action_name(),
+            'action': action,
             })
         if params:
             payload.set('params', parse_params(params))
@@ -830,8 +830,8 @@ class Action(Api):
         payload = Payload().set_many({
             'name': self.get_name(),
             'version': self.get_version(),
-            'action': self.get_action_name(),
-            'callee': action,
+            'caller': self.get_action_name(),
+            'action': action,
             })
         if params:
             payload.set('params', parse_params(params))
@@ -857,8 +857,8 @@ class Action(Api):
         payload = Payload().set_many({
             'name': self.get_name(),
             'version': self.get_version(),
-            'action': self.get_action_name(),
-            'callee': action,
+            'caller': self.get_action_name(),
+            'action': action,
             })
         if params:
             payload.set('params', parse_params(params))
@@ -955,8 +955,8 @@ class Action(Api):
         payload = Payload().set_many({
             'name': service,
             'version': version,
-            'callee': action,
-            'action': self.get_action_name(),
+            'action': action,
+            'caller': self.get_action_name(),
             })
         if params:
             payload.set('params', parse_params(params))
@@ -1013,8 +1013,8 @@ class Action(Api):
             'gateway': address,
             'name': service,
             'version': version,
-            'callee': action,
-            'action': self.get_action_name(),
+            'action': action,
+            'caller': self.get_action_name(),
             })
 
         timeout = kwargs.get('timeout')

@@ -50,6 +50,7 @@ FIELD_MAPPINGS = {
     'config': 'c',
     'count': 'c',
     'cpu': 'c',
+    'caller': 'C',
     'calls': 'C',
     'complete': 'C',
     'command_reply': 'cr',
