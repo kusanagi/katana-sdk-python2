@@ -1,6 +1,7 @@
 sdist/
 dist/
 var/
+.eggs/
 *.egg-info/
 *.egg
 .cache/
