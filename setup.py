@@ -18,7 +18,7 @@ setup(
     install_requires=[
         'gevent==1.2.1',
         'click==6.4',
-        'pyzmq==15.2.0',
+        'pyzmq==15.4.0',
         'msgpack-python==0.4.7',
     ],
     classifiers=[

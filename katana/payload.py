@@ -50,6 +50,7 @@ FIELD_MAPPINGS = {
     'config': 'c',
     'count': 'c',
     'cpu': 'c',
+    'caller': 'C',
     'calls': 'C',
     'complete': 'C',
     'command_reply': 'cr',
@@ -58,6 +59,7 @@ FIELD_MAPPINGS = {
     'default_value': 'd',
     'disk': 'd',
     'path_delimiter': 'd',
+    'deferred_calls': 'dc',
     'deprecated': 'D',
     'allow_empty': 'e',
     'entity_path': 'e',
@@ -128,6 +130,7 @@ FIELD_MAPPINGS = {
     'rollback': 'r',
     'remote_calls': 'rc',
     'response': 'R',
+    'return': 'R',
     'schema': 's',
     'schemes': 's',
     'scope': 's',
@@ -155,7 +158,21 @@ FIELD_MAPPINGS = {
     'timeout': 'x',
     'max_items': 'xi',
     'max_length': 'xl',
-}
+    }
+
+# Transport path for field that must be merged when service calls are made
+TRANSPORT_MERGEABLE_PATHS = (
+    'data',
+    'relations',
+    'links',
+    'calls',
+    'transactions',
+    'errors',
+    'body',
+    'files',
+    'meta/fallbacks',
+    'meta/properties',
+    )
 
 
 def get_path(payload, path, default=EMPTY, mappings=None, delimiter=SEP):

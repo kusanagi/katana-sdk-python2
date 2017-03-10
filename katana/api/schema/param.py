@@ -12,7 +12,6 @@ file that was distributed with this source code.
 
 from __future__ import absolute_import
 
-import json
 import logging
 import sys
 

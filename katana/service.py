@@ -15,6 +15,7 @@ from .api.action import Action
 from .payload import ErrorPayload
 from .payload import get_path
 from .payload import path_exists
+from .payload import Payload
 from .payload import TransportPayload
 from .server import ComponentServer
 from .server import DOWNLOAD
@@ -35,6 +36,8 @@ class ServiceServer(ComponentServer):
 
         super(ServiceServer, self).__init__(*args, **kwargs)
         self.__component = get_component()
+        self.__return_value = None
+        self.__transport = None
 
     @property
     def component_path(self):
@@ -105,10 +108,12 @@ class ServiceServer(ComponentServer):
 
         # Save transport locally to use it for response payload
         self.__transport = TransportPayload(get_path(payload, 'transport'))
+        # Create an empty return value
+        self.__return_value = Payload()
 
         return Action(
             action,
-            get_path(payload, 'params'),
+            get_path(payload, 'params', []),
             self.__transport,
             self.__component,
             self.source_file,
@@ -117,6 +122,7 @@ class ServiceServer(ComponentServer):
             self.framework_version,
             variables=self.variables,
             debug=self.debug,
+            return_value=self.__return_value,
             )
 
     def component_to_payload(self, payload, *args, **kwargs):
@@ -132,7 +138,12 @@ class ServiceServer(ComponentServer):
 
         """
 
-        return self.__transport.entity()
+        if not self.__return_value:
+            return self.__transport.entity()
+
+        # Use return value as base payload and add transport entity
+        self.__return_value.update(self.__transport.entity())
+        return self.__return_value
 
     def create_error_payload(self, exc, action, payload):
         # Add error to transport and return transport
