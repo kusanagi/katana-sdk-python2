@@ -1,6 +1,10 @@
 KATANA SDK for Python 2
 =======================
 
+[![Build Status](https://travis-ci.org/kusanagi/katana-sdk-python2.svg?branch=master)](https://travis-ci.org/kusanagi/katana-sdk-python2)
+[![Coverage Status](https://coveralls.io/repos/github/kusanagi/katana-sdk-python2/badge.svg?branch=master)](https://coveralls.io/github/kusanagi/katana-sdk-python2?branch=master)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 Python 2 SDK to interface with the **KATANA**™ framework (https://katana.kusanagi.io).
 
 Requirements
