@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - The wildcard ('*') in the last version part now matches any character.
+- `HttpActionSchema.get_method()` now returns method names in lower case.
 
 ## [1.0.0] - 2017-03-07
 - Initial release
