@@ -12,6 +12,8 @@ setup(
     license='MIT',
     author='Jerónimo Albi',
     author_email='jeronimo.albi@kusanagi.io',
+    description='Python 2 SDK to interface with the KATANA™ framework',
+    platforms=['POSIX'],
     packages=find_packages(exclude=['tests']),
     include_package_data=True,
     zip_safe=True,
