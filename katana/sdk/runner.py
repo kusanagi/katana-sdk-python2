@@ -13,6 +13,7 @@ from __future__ import absolute_import
 
 import functools
 import inspect
+import json
 import logging
 import os
 import signal
@@ -22,6 +23,7 @@ import gevent
 import katana.payload
 import zmq.green
 
+from ..errors import KatanaError
 from ..logging import setup_katana_logging
 from ..utils import EXIT_ERROR
 from ..utils import EXIT_OK
@@ -222,44 +224,51 @@ class ComponentRunner(object):
 
         return [
             click.option(
+                '-A', '--action',
+                help=(
+                    'Name of the action to call when request message '
+                    'is given as JSON through stdin.'
+                    ),
+                ),
+            click.option(
                 '-c', '--component',
                 type=click.Choice(['service', 'middleware']),
-                help='Component type',
+                help='Component type.',
                 required=True,
                 ),
             click.option(
                 '-d', '--disable-compact-names',
                 is_flag=True,
-                help='Use full property names instead of compact in payloads.',
+                help='Use full property names in payloads.',
                 ),
             click.option(
                 '-n', '--name',
                 required=True,
-                help='Component name',
+                help='Component name.',
                 ),
             click.option(
                 '-p', '--framework-version',
                 required=True,
-                help='KATANA framework version',
+                help='KATANA framework version.',
                 ),
             click.option(
                 '-q', '--quiet',
                 is_flag=True,
-                help='Disable all logs',
+                help='Disable all logs.',
                 ),
             click.option(
                 '-s', '--socket',
-                help='IPC socket name',
+                help='IPC socket name.',
                 ),
             click.option(
                 '-t', '--tcp',
-                help='TCP port',
+                help='TCP port to use when IPC socket is not used.',
                 type=click.INT,
                 ),
             click.option(
                 '-v', '--version',
                 required=True,
-                help='Component version',
+                help='Component version.',
                 ),
             click.option(
                 '-D', '--debug',
@@ -269,7 +278,7 @@ class ComponentRunner(object):
                 '-V', '--var',
                 multiple=True,
                 callback=key_value_strings_callback,
-                help='Variables',
+                help='Component variables.',
                 ),
             ]
 
@@ -325,18 +334,29 @@ class ComponentRunner(object):
 
         self._args = kwargs
 
+        # Get input message with action name and payload if available
+        message = {}
+        contents = click.get_text_stream('stdin', encoding='utf8').read()
+        if contents:
+            if not kwargs.get('action'):
+                LOG.error('Action name is missing')
+                os._exit(EXIT_ERROR)
+
+            # Add action name to message
+            message['action'] = kwargs['action']
+
+            # Add JSON file contents to message
+            try:
+                message['payload'] = json.loads(contents)
+            except:
+                LOG.exception('Stdin input value is not valid JSON')
+                os._exit(EXIT_ERROR)
+
         # Initialize component logging only when `quiet` argument is False
         if not kwargs.get('quiet'):
             setup_katana_logging(logging.DEBUG if self.debug else logging.INFO)
 
         LOG.debug('Using PID: "%s"', os.getpid())
-
-        # Create channel for TCP or IPC conections
-        if self.tcp_port:
-            channel = tcp('127.0.0.1:{}'.format(self.tcp_port))
-        else:
-            # Abstract domain unix socket
-            channel = 'ipc://{}'.format(self.socket_name)
 
         # When compact mode is enabled use long payload field names
         if not self.compact_names:
@@ -344,13 +364,20 @@ class ComponentRunner(object):
 
         # Create component server
         server = self.server_cls(
-            channel,
             self.callbacks,
             self.args,
             debug=self.debug,
             source_file=self.source_file,
             error_callback=self.__error_callback,
             )
+
+        if not message:
+            # Create channel for TCP or IPC conections
+            if self.tcp_port:
+                channel = tcp('127.0.0.1:{}'.format(self.tcp_port))
+            else:
+                # Abstract domain unix socket
+                channel = 'ipc://{}'.format(self.socket_name)
 
         # By default exit successfully
         exit_code = EXIT_OK
@@ -368,13 +395,21 @@ class ComponentRunner(object):
         # Run component server
         if exit_code != EXIT_ERROR:
             try:
-                # Create a greenlet to runs server
-                greenlet = gevent.spawn(server.listen)
+                # Create a greenlet to run server
+                if message:
+                    greenlet = gevent.spawn(server.process_input, message)
+                else:
+                    greenlet = gevent.spawn(server.listen, channel)
+
                 # Listen for SIGTERM and SIGINT
                 gevent.signal(signal.SIGTERM, greenlet.kill)
                 gevent.signal(signal.SIGINT, greenlet.kill)
                 # Run server
                 greenlet.join()
+            except KatanaError as err:
+                exit_code = EXIT_ERROR
+                LOG.error(err)
+                LOG.error('Component failed')
             except zmq.error.ZMQError as err:
                 exit_code = EXIT_ERROR
                 if err.errno == 98:
