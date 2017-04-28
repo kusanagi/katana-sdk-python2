@@ -21,6 +21,7 @@ import zmq.green
 from gevent.threadpool import ThreadPool
 
 from .errors import KatanaError
+from .json import serialize
 from .payload import CommandPayload
 from .payload import CommandResultPayload
 from .payload import ErrorPayload
@@ -67,11 +68,9 @@ def create_error_response(message, *args, **kwargs):
 class ComponentServer(object):
     """Server class for components."""
 
-    def __init__(self, channel, callbacks, args, **kwargs):
+    def __init__(self, callbacks, args, **kwargs):
         """Constructor.
 
-        :param channel: Channel to listen for incoming requests.
-        :type channel: str
         :param callbacks: Callbacks for registered action handlers.
         :type callbacks: dict
         :param args: CLI arguments.
@@ -88,12 +87,12 @@ class ComponentServer(object):
         self.__schema_registry = get_schema_registry()
         self._pool = ThreadPool(cpu_count() * 5)
 
-        self.channel = channel
         self.callbacks = callbacks
         self.error_callback = kwargs.get('error_callback')
         self.source_file = kwargs.get('source_file')
-        self.context = zmq.green.Context()
-        self.poller = zmq.green.Poller()
+
+        self.context = None
+        self.poller = None
 
     @property
     def component_name(self):
@@ -205,8 +204,19 @@ class ComponentServer(object):
         socket.send_multipart(response)
         socket.close()
 
-    def __process_request(self, stream):
+    def __process_request_payload(self, action, payload):
+        # Call request handler and send response back
+        try:
+            payload = self.process_payload(action, CommandPayload(payload))
+        except KatanaError as err:
+            payload = ErrorPayload.new(message=err.message).entity()
+        except:
+            LOG.exception('Component failed')
+            payload = ErrorPayload.new('Component failed').entity()
 
+        return payload
+
+    def __process_request(self, stream):
         try:
             frames = Frames(*stream)
         except:
@@ -233,21 +243,14 @@ class ComponentServer(object):
 
         # Get command payload from request stream
         try:
-            payload = CommandPayload(unpack(frames.stream))
+            payload = unpack(frames.stream)
         except:
             LOG.exception('Received an invalid message format')
             response = create_error_response('Internal communication failed')
             self._send_response(response)
             return
 
-        # Call request handler and send response back
-        try:
-            payload = self.process_payload(action, payload)
-        except KatanaError as err:
-            payload = ErrorPayload.new(message=err.message).entity()
-        except:
-            LOG.exception('Component failed')
-            payload = ErrorPayload.new('Component failed').entity()
+        payload = self.__process_request_payload(action, payload)
 
         self._send_response([
             self.get_response_meta(payload) or EMPTY_META, pack(payload)
@@ -267,7 +270,7 @@ class ComponentServer(object):
         """
 
         if not payload.path_exists('command'):
-            LOG.error('Payload missing command')
+            LOG.error("Invalid request: Command payload is missing")
             return ErrorPayload.new('Internal communication failed').entity()
 
         command_name = payload.get('command/name')
@@ -305,15 +308,58 @@ class ComponentServer(object):
         # Convert callback result to a command payload
         return CommandResultPayload.new(command_name, payload).entity()
 
-    def listen(self):
-        """Start listening for incoming requests."""
+    def process_input(self, message):
+        """Process input message and print result payload.
 
-        LOG.debug('Listening for requests in channel: "%s"', self.channel)
+        Input message is given from the CLI using the `--callback`
+        option.
+
+        :param message: Input message with action name and payload.
+        :type message: dict
+
+        :returns: The response payload as JSON
+        :rtype: str
+
+        """
+
+        action = message['action']
+        if action not in self.callbacks:
+            message = 'Invalid action for component {}: "{}"'.format(
+                self.component_title,
+                action,
+                )
+            raise KatanaError(message)
+
+        payload = self.__process_request_payload(
+            action,
+            message['payload'],
+            )
+        # When an error payload is returned use its message
+        # to raise an exception.
+        error = payload.get('error/message', None)
+        if error:
+            raise KatanaError(error)
+
+        output = serialize(payload, prettify=True).decode('utf8')
+        print(output)
+
+    def listen(self, channel):
+        """Start listening for incoming requests.
+
+        :param channel: Channel to listen for incoming requests.
+        :type channel: str
+
+        """
+
+        self.context = zmq.green.Context()
+        self.poller = zmq.green.Poller()
+
+        LOG.debug('Listening for requests in channel: "%s"', channel)
         self.__worker_socket = self.context.socket(zmq.PULL)
         self.__worker_socket.bind('inproc://workers')
         self.poller.register(self.__worker_socket, zmq.POLLIN)
         self.__socket = self.context.socket(zmq.REP)
-        self.__socket.bind(self.channel)
+        self.__socket.bind(channel)
         self.poller.register(self.__socket, zmq.POLLIN)
 
         LOG.info('Component initiated...')
