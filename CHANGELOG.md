@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased] - 2017-05-04
 ### Added
 - Added support to get service return value in response middlewares.
-- Added getter for origin duration to transport
+- Added getter for origin duration to transport.
+- Added "binary" type support for parameters and return value.
 
 ## [1.0.1] - 2017-04-28
 ### Added
@@ -23,4 +24,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Engine variables now works with request and response middlewares.
 
 ## [1.0.0] - 2017-03-07
-- Initial release
+- Initial release.

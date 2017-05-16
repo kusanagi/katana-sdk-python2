@@ -49,6 +49,7 @@ DEFAULT_RETURN_VALUES = {
     'integer': 0,
     'float': 0.0,
     'string': '',
+    'binary': '',
     'array': [],
     'object': {},
     }
@@ -58,6 +59,7 @@ RETURN_TYPES = {
     'integer': (int, ),
     'float': (float, Decimal),
     'string': (str, ),
+    'binary': (str, ),
     'array': (list, ),
     'object': (dict, ),
     }
