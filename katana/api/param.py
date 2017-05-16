@@ -125,6 +125,12 @@ class Param(object):
 
         # Resolve standard mapped python types
         for type_name, cls in TYPE_CLASSES.items():
+            # Don't resolve binary, because there is no distinction between
+            # str and bytes.
+            # Binary MUST be used with the parameter type, and never guessed.
+            if type_name == TYPE_BINARY:
+                continue
+
             if value_class == cls:
                 return type_name
 
