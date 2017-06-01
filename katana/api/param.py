@@ -32,6 +32,7 @@ TYPE_FLOAT = 'float'
 TYPE_ARRAY = 'array'
 TYPE_OBJECT = 'object'
 TYPE_STRING = 'string'
+TYPE_BINARY = 'binary'
 
 # Parameter type names to python types
 TYPE_CLASSES = {
@@ -41,6 +42,7 @@ TYPE_CLASSES = {
     TYPE_ARRAY: list,
     TYPE_OBJECT: dict,
     TYPE_STRING: str,
+    TYPE_BINARY: bytes,
     }
 
 
@@ -118,13 +120,17 @@ class Param(object):
         value_class = value.__class__
 
         # Resolve non standard python types
-        if value_class == bytes:
-            return TYPE_STRING
-        elif value_class in (tuple, set):
+        if value_class in (tuple, set):
             return TYPE_ARRAY
 
         # Resolve standard mapped python types
         for type_name, cls in TYPE_CLASSES.items():
+            # Don't resolve binary, because there is no distinction between
+            # str and bytes.
+            # Binary MUST be used with the parameter type, and never guessed.
+            if type_name == TYPE_BINARY:
+                continue
+
             if value_class == cls:
                 return type_name
 

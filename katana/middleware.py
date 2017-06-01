@@ -15,6 +15,7 @@ import logging
 
 from .api.param import param_to_payload
 from .api.request import Request
+from .api.response import NO_RETURN_VALUE
 from .api.response import Response
 from .api.transport import Transport
 from .payload import ErrorPayload
@@ -99,8 +100,9 @@ class MiddlewareServer(ComponentServer):
             self.component_name,
             self.component_version,
             self.framework_version,
-            variables=self.variables,
             debug=self.debug,
+            variables=self.variables,
+            return_value=payload.get('return', NO_RETURN_VALUE),
             # TODO: Use meta and argument
             gateway_protocol=payload.get('meta/protocol'),
             gateway_addresses=payload.get('meta/gateway'),

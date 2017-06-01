@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.0] - 2017-06-01
+### Added
+- Added support to get service return value in response middlewares.
+- Added getter for origin duration to transport.
+- Added "binary" type support for parameters and return value.
+
+### Changed
+- Updated CONTRIBUTING.md and README.md
+
 ## [1.0.1] - 2017-04-28
 ### Added
 - Version wildcards support for single '*' to match all.
@@ -18,4 +27,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Engine variables now works with request and response middlewares.
 
 ## [1.0.0] - 2017-03-07
-- Initial release
+- Initial release.
