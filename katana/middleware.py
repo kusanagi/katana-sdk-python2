@@ -67,6 +67,8 @@ class MiddlewareServer(ComponentServer):
 
         code, text = payload.get('response/status').split(' ', 1)
         return {
+            'version': payload.get('response/version', '1.1'),
+            'headers': MultiDict(payload.get('response/headers', {})),
             'status_code': int(code),
             'status_text': text,
             'body': payload.get('response/body', ''),
@@ -161,7 +163,7 @@ class MiddlewareServer(ComponentServer):
                 version=http_response.get_protocol_version(),
                 status=http_response.get_status(),
                 body=http_response.get_body(),
-                headers=dict(http_response.get_headers()),
+                headers=dict(http_response.get_headers_array()),
                 )
         else:
             LOG.error('Invalid Middleware callback result')
