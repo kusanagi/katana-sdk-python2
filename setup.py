@@ -14,6 +14,7 @@ setup(
     author_email='jeronimo.albi@kusanagi.io',
     description='Python 2 SDK to interface with the KATANA™ framework',
     platforms=['POSIX'],
+    download_url='https://github.com/kusanagi/katana-sdk-python2/releases',
     packages=find_packages(exclude=['tests']),
     include_package_data=True,
     zip_safe=True,
