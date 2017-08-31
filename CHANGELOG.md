@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.1] - Unreleased
+## [1.2.0] - Unreleased
 ### Changed
 - Callback for `Component.set_resource()` now receives the component as
   the first argument.
@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Service schema resolution now supports services that contain
   "/" in their name.
+- File parameters now work for service to service calls.
 
 ## [1.1.0] - 2017-06-01
 ### Added
