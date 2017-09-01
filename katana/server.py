@@ -12,10 +12,12 @@ file that was distributed with this source code.
 from __future__ import absolute_import
 
 import logging
+import os
 
 from collections import namedtuple
 from multiprocessing import cpu_count
 
+import gevent
 import zmq.green
 
 from gevent.threadpool import ThreadPool
@@ -25,6 +27,7 @@ from .json import serialize
 from .payload import CommandPayload
 from .payload import CommandResultPayload
 from .payload import ErrorPayload
+from .payload import Payload
 from .schema import get_schema_registry
 from .serialization import pack
 from .serialization import unpack
@@ -133,16 +136,20 @@ class ComponentServer(object):
 
         raise NotImplementedError()
 
-    def create_component_instance(self, payload):
+    def create_component_instance(self, action, payload, extra):
         """Create a component instance for a payload.
 
         The type of component created depends on the payload type.
 
+        :param action: Name of action that must process payload.
+        :type action: str
         :param payload: A payload.
-        :type payload: Payload.
+        :type payload: Payload
+        :param extra: A payload to add extra command reply values to result.
+        :type extra: Payload
 
-        :returns: A component instance for the type of payload.
-        :rtype: Component.
+        :returns: A component instance.
+        :rtype: `Component`
 
         """
 
@@ -216,14 +223,12 @@ class ComponentServer(object):
 
         return payload
 
-    def __process_request(self, stream):
+    def __process_request_stream(self, stream):
         try:
             frames = Frames(*stream)
         except:
             LOG.error('Received an invalid multipart stream')
-            response = create_error_response('Failed to handle request')
-            self._send_response(response)
-            return
+            return create_error_response('Failed to handle request')
 
         # Update global schema registry when mappings are sent
         if frames.mappings:
@@ -233,28 +238,43 @@ class ComponentServer(object):
         action = frames.action.decode('utf8')
         if action not in self.callbacks:
             # Return an error when action doesn't exist
-            response = create_error_response(
+            return create_error_response(
                 'Invalid action for component {}: "{}"',
                 self.component_title,
                 action,
                 )
-            self._send_response(response)
-            return
 
         # Get command payload from request stream
         try:
             payload = unpack(frames.stream)
         except:
             LOG.exception('Received an invalid message format')
-            response = create_error_response('Internal communication failed')
-            self._send_response(response)
-            return
+            return create_error_response('Internal communication failed')
 
         payload = self.__process_request_payload(action, payload)
+        return [self.get_response_meta(payload) or EMPTY_META, pack(payload)]
 
-        self._send_response([
-            self.get_response_meta(payload) or EMPTY_META, pack(payload)
-            ])
+    def __process_request(self, stream, pid, timeout):
+        # Process request and get response stream.
+        # Request are processed inside a thread pool to avoid
+        # userland code to block requests.
+        res = self._pool.spawn(self.__process_request_stream, stream)
+
+        # Wait for a period of seconds to get the execution result
+        try:
+            response = res.get(timeout=timeout)
+        except gevent.Timeout:
+            msg = 'SDK execution timed out after {}ms'.format(
+                int(timeout * 1000),
+                pid,
+                )
+            response = create_error_response(msg)
+            LOG.warn('{}. PID: {}'.format(msg, pid))
+        except:
+            LOG.exception('Failed to handle request. PID: %d', pid)
+            response = create_error_response('Failed to handle request')
+
+        self._send_response(response)
 
     def process_payload(self, action, payload):
         """Process a request payload.
@@ -275,9 +295,15 @@ class ComponentServer(object):
 
         command_name = payload.get('command/name')
 
+        # Create a variable to hold extra command reply result values.
+        # This is used for example to the request attributes.
+        # Because extra is passed by reference any modification by the
+        # create component modifies the extra payload.
+        extra = Payload()
+
         # Create a component instance using the command payload and
         # call user land callback to process it and get a response component.
-        component = self.create_component_instance(action, payload)
+        component = self.create_component_instance(action, payload, extra)
         if not component:
             return ErrorPayload.new('Internal communication failed').entity()
 
@@ -304,6 +330,10 @@ class ComponentServer(object):
                 self.error_callback(error)
             except:
                 LOG.exception('Error callback failed for "%s"', action)
+
+        # Add extra command reply result values to payload
+        if extra:
+            payload.update(extra)
 
         # Convert callback result to a command payload
         return CommandResultPayload.new(command_name, payload).entity()
@@ -351,6 +381,9 @@ class ComponentServer(object):
 
         """
 
+        pid = os.getpid()
+        timeout = self.__args["timeout"] / 1000.0
+
         self.context = zmq.green.Context()
         self.poller = zmq.green.Poller()
 
@@ -370,10 +403,7 @@ class ComponentServer(object):
                 if events.get(self.__socket) == zmq.POLLIN:
                     # Get request multipart stream
                     stream = self.__socket.recv_multipart()
-                    # Process request and get response stream.
-                    # Request are processed inside a thread pool to avoid
-                    # userland code to block requests.
-                    self._pool.spawn(self.__process_request, stream)
+                    gevent.spawn(self.__process_request, stream, pid, timeout)
 
                 if events.get(self.__worker_socket) == zmq.POLLIN:
                     stream = self.__worker_socket.recv_multipart()

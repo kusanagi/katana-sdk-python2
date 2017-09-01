@@ -78,21 +78,23 @@ class ServiceServer(ComponentServer):
                 # another service is made.
                 files = get_path(transport, 'files', None)
                 if files:
+                    address = get_path(transport, 'meta/gateway')[1]  # Public gateway address
                     for call in calls:
-                        files_path = '{}/{}/{}'.format(
+                        files_path = '{} {} {} {}'.format(
+                            address,
                             nomap(get_path(call, 'name')),
                             get_path(call, 'version'),
                             nomap(get_path(call, 'action')),
                             )
 
                         # Add flag and exit when at least one call has files
-                        if path_exists(files, files_path):
+                        if path_exists(files, files_path, delimiter=' '):
                             meta += FILES
                             break
 
         return meta
 
-    def create_component_instance(self, action, payload):
+    def create_component_instance(self, action, payload, *args):
         """Create a component instance for current command payload.
 
         :param action: Name of action that must process payload.
@@ -109,6 +111,8 @@ class ServiceServer(ComponentServer):
         # Save transport locally to use it for response payload
         self.__transport = TransportPayload(get_path(payload, 'transport'))
         # Create an empty return value
+        # TODO: This should use the extra argument that this method receives
+        #       See middlewares and "attributes".
         self.__return_value = Payload()
 
         return Action(

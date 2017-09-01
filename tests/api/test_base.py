@@ -24,6 +24,7 @@ def test_api_base(mocker):
 
     # Check defaults
     assert not api.is_debug()
+    assert not api.has_variable('foo')
     assert api.get_variables() == {}
 
     # Check values
@@ -46,6 +47,7 @@ def test_api_base(mocker):
     variables = {'foo': 'bar'}
     api = base.Api(component, variables=variables, debug=True, **values)
     assert api.is_debug()
+    assert api.has_variable('foo')
     assert api.get_variables() == variables
     assert api.get_variable('foo') == variables['foo']
 
@@ -87,7 +89,7 @@ def test_api_base_get_service_schema(mocker):
 
     svc_name = 'foo'
     svc_version = '1.0.0'
-    path = '{}/{}'.format(svc_name, svc_version)
+    path = '{} {}'.format(svc_name, svc_version)
     payload = {'foo': 'bar'}
 
     # Check error for empty schemas
@@ -96,7 +98,7 @@ def test_api_base_get_service_schema(mocker):
         api.get_service_schema(svc_name, svc_version)
 
     # Check that schema registry get was called with proper service path
-    registry.get.assert_called_with(path, None)
+    registry.get.assert_called_with(path, None, delimiter=' ')
 
     # Check getting a service schema
     init = mocker.patch(
@@ -106,7 +108,7 @@ def test_api_base_get_service_schema(mocker):
     registry.get = mocker.MagicMock(return_value=payload)
     svc_schema = api.get_service_schema(svc_name, svc_version)
     assert isinstance(svc_schema, ServiceSchema)
-    registry.get.assert_called_with(path, None)
+    registry.get.assert_called_with(path, None, delimiter=' ')
     init.assert_called_with(svc_name, svc_version, payload)
 
     # Check getting a service schema using a wildcard version
