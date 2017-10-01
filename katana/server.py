@@ -13,6 +13,7 @@ from __future__ import absolute_import
 
 import logging
 import os
+import sys
 
 from collections import namedtuple
 from multiprocessing import cpu_count
@@ -372,6 +373,7 @@ class ComponentServer(object):
 
         output = serialize(payload, prettify=True).decode('utf8')
         print(output)
+        sys.stdout.flush()
 
     def listen(self, channel):
         """Start listening for incoming requests.
