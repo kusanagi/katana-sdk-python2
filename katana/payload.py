@@ -143,6 +143,7 @@ FIELD_MAPPINGS = {
     'status': 's',
     'swap': 's',
     'system': 's',
+    'tags': 't',
     'terminate': 't',
     'token': 't',
     'total': 't',
