@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Parameter schema default value getter now returns None by default.
 
 ### Fixed
+- Error payload handling during runtime calls
+
+### Fixed
 - Component.log() now includes the date and [SDK] prefix.
 
 ## [1.2.1] - 2017-10-01
