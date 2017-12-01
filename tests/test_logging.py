@@ -1,9 +1,6 @@
-from __future__ import unicode_literals
-
 import logging
 
 from katana.logging import KatanaFormatter
-from katana.logging import setup_katana_logging
 from katana.logging import value_to_log_string
 
 
@@ -64,12 +61,15 @@ def test_setup_katana_logging(logs):
     assert isinstance(logger.handlers[0].formatter, logging.Formatter)
 
     # Basic check for logging format
-    message = 'Test message'
+    message = u'Test message'
     logging.getLogger('katana').info(message)
     out = logs.getvalue()
     assert len(out) > 0
     out_parts = out.split(' ')
     assert out_parts[0].endswith('Z')  # Time
-    assert out_parts[1] == '[INFO]'  # Level
-    assert out_parts[2] == '[SDK]'  # SDK prefix
-    assert ' '.join(out_parts[3:]).strip() == message
+    assert out_parts[1] == 'component'  # Component type
+    assert out_parts[2] == 'name/version'  # Component name and version
+    assert out_parts[3] == '(framework-version)'
+    assert out_parts[4] == '[INFO]'  # Level
+    assert out_parts[5] == '[SDK]'  # SDK prefix
+    assert ' '.join(out_parts[6:]).strip() == message

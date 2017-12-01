@@ -25,6 +25,7 @@ from gevent.threadpool import ThreadPool
 
 from .errors import KatanaError
 from .json import serialize
+from .logging import RequestLogger
 from .payload import CommandPayload
 from .payload import CommandResultPayload
 from .payload import ErrorPayload
@@ -97,6 +98,17 @@ class ComponentServer(object):
 
         self.context = None
         self.poller = None
+
+    @staticmethod
+    def get_type():
+        """
+        Get the name of the component type.
+
+        :rtype: str
+
+        """
+
+        raise NotImplementedError()
 
     @property
     def component_name(self):
@@ -214,12 +226,14 @@ class ComponentServer(object):
 
     def __process_request_payload(self, action, payload):
         # Call request handler and send response back
+        cmd = CommandPayload(payload)
         try:
-            payload = self.process_payload(action, CommandPayload(payload))
+            payload = self.process_payload(action, cmd)
         except KatanaError as err:
             payload = ErrorPayload.new(message=err.message).entity()
         except:
-            LOG.exception('Component failed')
+            rlog = RequestLogger(cmd.request_id, __name__)
+            rlog.exception('Component failed')
             payload = ErrorPayload.new('Component failed').entity()
 
         return payload
@@ -295,7 +309,8 @@ class ComponentServer(object):
             return ErrorPayload.new('Internal communication failed').entity()
 
         command_name = payload.get('command/name')
-
+        # Create a request logger using the request ID from the command payload
+        rlog = RequestLogger(payload.request_id, __name__)
         # Create a variable to hold extra command reply result values.
         # This is used for example to the request attributes.
         # Because extra is passed by reference any modification by the
@@ -319,18 +334,18 @@ class ComponentServer(object):
                 payload=payload,
                 )
         except Exception as exc:
-            LOG.exception('Component failed')
+            rlog.exception('Component failed')
             error = exc
             payload = ErrorPayload.new(str(exc)).entity()
         else:
             payload = self.component_to_payload(payload, component)
 
         if error and self.error_callback:
-            LOG.debug('Running error callback ...')
+            rlog.debug('Running error callback ...')
             try:
                 self.error_callback(error)
             except:
-                LOG.exception('Error callback failed for "%s"', action)
+                rlog.exception('Error callback failed for "%s"', action)
 
         # Add extra command reply result values to payload
         if extra:

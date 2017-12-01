@@ -45,6 +45,10 @@ class MiddlewareServer(ComponentServer):
         self.__component = get_component()
 
     @staticmethod
+    def get_type():
+        return 'middleware'
+
+    @staticmethod
     def http_request_from_payload(payload):
         if not payload.path_exists('request'):
             return

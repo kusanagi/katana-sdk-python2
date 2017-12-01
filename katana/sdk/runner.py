@@ -355,12 +355,6 @@ class ComponentRunner(object):
             # Add action name to message
             message['action'] = kwargs['action']
 
-        # Initialize component logging only when `quiet` argument is False
-        if not kwargs.get('quiet'):
-            setup_katana_logging(logging.DEBUG if self.debug else logging.INFO)
-
-        LOG.debug('Using PID: "%s"', os.getpid())
-
         # When compact mode is enabled use long payload field names
         if not self.compact_names:
             katana.payload.DISABLE_FIELD_MAPPINGS = True
@@ -373,6 +367,19 @@ class ComponentRunner(object):
             source_file=self.source_file,
             error_callback=self.__error_callback,
             )
+
+        # Initialize component logging only when `quiet` argument is False, or
+        # if an input message is given init logging only when debug is True
+        if not kwargs.get('quiet'):
+            setup_katana_logging(
+                self.server_cls.get_type(),
+                server.component_name,
+                server.component_version,
+                server.framework_version,
+                logging.DEBUG if self.debug else logging.INFO,
+                )
+
+        LOG.debug('Using PID: "%s"', os.getpid())
 
         if not message:
             # Create channel for TCP or IPC conections

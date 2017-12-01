@@ -39,6 +39,10 @@ class ServiceServer(ComponentServer):
         self.__return_value = None
         self.__transport = None
 
+    @staticmethod
+    def get_type():
+        return 'service'
+
     @property
     def component_path(self):
         return '{}/{}'.format(

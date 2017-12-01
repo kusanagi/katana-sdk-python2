@@ -12,15 +12,12 @@ file that was distributed with this source code.
 
 from __future__ import absolute_import
 
-import logging
 import sys
 
 from ...payload import Payload
 
 __license__ = "MIT"
 __copyright__ = "Copyright (c) 2016-2017 KUSANAGI S.L. (http://kusanagi.io)"
-
-LOG = logging.getLogger(__name__)
 
 
 class ParamSchema(object):
@@ -104,11 +101,11 @@ class ParamSchema(object):
     def get_default_value(self):
         """Get default value for parameter.
 
-        :rtype: str
+        :rtype: object
 
         """
 
-        return self.__payload.get('default_value', '')
+        return self.__payload.get('default_value', None)
 
     def is_required(self):
         """Check if parameter is required.
