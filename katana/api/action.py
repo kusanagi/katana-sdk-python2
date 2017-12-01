@@ -20,6 +20,7 @@ from decimal import Decimal
 import zmq
 import zmq.green
 
+from ..logging import RequestLogger
 from ..payload import CommandPayload
 from ..payload import ErrorPayload
 from ..payload import get_path
@@ -254,6 +255,11 @@ class Action(Api):
             get_path(param, 'name'): Payload(param)
             for param in params
             }
+
+        # Logging is only enabled when debug is True
+        if self.is_debug():
+            rid = transport.get('meta/id')
+            self._logger = RequestLogger(rid, 'katana.api')
 
         service = self.get_name()
         version = self.get_version()

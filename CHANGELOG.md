@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Support for action tags defined in the configuration.
+- Request ID to logs.
+- Component and framework info was added to log prefix.
 
 ### Changed
 - Runtime call default timeout to 10000.
