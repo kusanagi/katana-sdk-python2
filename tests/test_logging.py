@@ -46,9 +46,15 @@ def test_value_to_log_string():
 
 def test_setup_katana_logging(logs):
     # Root logger must use KatanaFormatter.
-    # Check for 2 loggers because Travis CI is adding an extra pytest logger.
+    # Travis CI is adding an extra pytest logger.
     assert 1 <= len(logging.root.handlers) <= 2
-    assert isinstance(logging.root.handlers[0].formatter, KatanaFormatter)
+
+    formatter = None
+    for handler in logging.root.handlers:
+        if isinstance(handler.formatter, KatanaFormatter):
+            formatter = handler.formatter
+
+    assert formatter is not None
 
     # SDK loggers must use KatanaFormatter
     for name in ('katana', 'katana.api'):
