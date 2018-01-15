@@ -126,6 +126,9 @@ class Transport(object):
 
         By default get all data from Transport.
 
+        Data is returned as a list when all parameters are present, otherwise
+        data is a dict.
+
         :param address: Optional public address of a Gateway.
         :type address: str
         :param service: Optional Service name.
@@ -136,7 +139,7 @@ class Transport(object):
         :type action: str
 
         :returns: The Transport data.
-        :rtype: dict
+        :rtype: object
 
         """
 
