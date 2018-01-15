@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Calls to `Api.done()` raise an exception now.
 - Action schema entity's primary key field name is getted from the
   entity instead of the action.
+- Removed `ActionSchema.get_primary_key()`
 
 ## [1.3.0] - 2017-11-01
 ### Added
