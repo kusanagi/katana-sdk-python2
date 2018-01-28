@@ -8,12 +8,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - A configured file server must be available to make runtime calls
   that send file parameters.
+- Added "log-level" support to runner.
 
 ### Changed
 - Calls to `Api.done()` raise an exception now.
 - Action schema entity's primary key field name is getted from the
   entity instead of the action.
 - Removed `ActionSchema.get_primary_key()`
+- Removed the "quiet" CLI flag.
 
 ## [1.3.0] - 2017-11-01
 ### Added
