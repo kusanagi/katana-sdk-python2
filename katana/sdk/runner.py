@@ -24,7 +24,9 @@ import katana.payload
 import zmq.green
 
 from ..errors import KatanaError
+from ..logging import disable_logging
 from ..logging import setup_katana_logging
+from ..logging import SYSLOG_NUMERIC
 from ..utils import EXIT_ERROR
 from ..utils import EXIT_OK
 from ..utils import ipc
@@ -34,18 +36,6 @@ __license__ = "MIT"
 __copyright__ = "Copyright (c) 2016-2017 KUSANAGI S.L. (http://kusanagi.io)"
 
 LOG = logging.getLogger(__name__)
-
-# Mappings between Syslog numeric severity levels and python logging levels
-LEVELS = {
-    0: logging.CRITICAL,  # Emergency
-    1: logging.CRITICAL,  # Alert
-    2: logging.CRITICAL,  # Critical
-    3: logging.ERROR,     # Error
-    4: logging.WARNING,   # Notice
-    5: logging.WARNING,   # Warning
-    6: logging.INFO,      # Info
-    7: logging.DEBUG,     # Debug
-    }
 
 
 def key_value_strings_callback(ctx, param, values):
@@ -354,7 +344,19 @@ class ComponentRunner(object):
 
         """
 
-        self._args = kwargs
+        # Initialize component logging
+        log_level = kwargs.get('log_level')
+        if log_level in SYSLOG_NUMERIC:
+            setup_katana_logging(
+                self.server_cls.get_type(),
+                kwargs['name'],
+                kwargs['version'],
+                kwargs['framework_version'],
+                SYSLOG_NUMERIC[log_level],
+                )
+        else:
+            # No logs are printed when log-level is not available
+            disable_logging()
 
         # Standard input is read only when action name is given
         message = {}
@@ -371,6 +373,8 @@ class ComponentRunner(object):
             # Add action name to message
             message['action'] = kwargs['action']
 
+        self._args = kwargs
+
         # When compact mode is enabled use long payload field names
         if not self.compact_names:
             katana.payload.DISABLE_FIELD_MAPPINGS = True
@@ -383,17 +387,6 @@ class ComponentRunner(object):
             source_file=self.source_file,
             error_callback=self.__error_callback,
             )
-
-        # Initialize component logging
-        log_level = kwargs.get('log_level')
-        if log_level in LEVELS:
-            setup_katana_logging(
-                self.server_cls.get_type(),
-                server.component_name,
-                server.component_version,
-                server.framework_version,
-                LEVELS[log_level],
-                )
 
         LOG.debug('Using PID: "%s"', os.getpid())
 

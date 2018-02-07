@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   entity instead of the action.
 - Removed `ActionSchema.get_primary_key()`
 - Removed the "quiet" CLI flag.
+- Logging changed to support the new Syslog based logging from KATANA.
 
 ## [1.3.0] - 2017-11-01
 ### Added
