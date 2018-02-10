@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - A configured file server must be available to make runtime calls
   that send file parameters.
 - Added "log-level" support to runner.
+- Implemented support for the Transport API.
 
 ### Changed
 - Calls to `Api.done()` raise an exception now.
