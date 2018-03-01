@@ -1,7 +1,7 @@
 """
 Python 2 SDK for the KATANA(tm) Framework (http://katana.kusanagi.io)
 
-Copyright (c) 2016-2017 KUSANAGI S.L. All rights reserved.
+Copyright (c) 2016-2018 KUSANAGI S.L. All rights reserved.
 
 Distributed under the MIT license.
 
@@ -20,7 +20,7 @@ from ... payload import path_exists
 from ... payload import Payload
 
 __license__ = "MIT"
-__copyright__ = "Copyright (c) 2016-2017 KUSANAGI S.L. (http://kusanagi.io)"
+__copyright__ = "Copyright (c) 2016-2018 KUSANAGI S.L. (http://kusanagi.io)"
 
 
 def entity_from_payload(entity_payload, entity=None):
@@ -150,18 +150,6 @@ class ActionSchema(object):
         """
 
         return self.__payload.get('path_delimiter', '/')
-
-    def get_primary_key(self):
-        """Get primary key field name.
-
-        Gets the name of the property in the entity which
-        contains the primary key.
-
-        :rtype: str
-
-        """
-
-        return self.__payload.get('primary_key', 'id')
 
     def resolve_entity(self, data):
         """Get entity from data.

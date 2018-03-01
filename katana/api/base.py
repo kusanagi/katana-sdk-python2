@@ -1,7 +1,7 @@
 """
 Python 2 SDK for the KATANA(tm) Framework (http://katana.kusanagi.io)
 
-Copyright (c) 2016-2017 KUSANAGI S.L. All rights reserved.
+Copyright (c) 2016-2018 KUSANAGI S.L. All rights reserved.
 
 Distributed under the MIT license.
 
@@ -9,19 +9,17 @@ For the full copyright and license information, please view the LICENSE
 file that was distributed with this source code.
 
 """
-
 from __future__ import absolute_import
-
-import logging
 
 from .schema.service import ServiceSchema
 from ..errors import KatanaError
+from ..logging import INFO
 from ..logging import value_to_log_string
 from ..schema import get_schema_registry
 from ..versions import VersionString
 
 __license__ = "MIT"
-__copyright__ = "Copyright (c) 2016-2017 KUSANAGI S.L. (http://kusanagi.io)"
+__copyright__ = "Copyright (c) 2016-2018 KUSANAGI S.L. (http://kusanagi.io)"
 
 
 class ApiError(KatanaError):
@@ -38,7 +36,7 @@ class Api(object):
         self.__framework_version = framework_version
         self.__variables = kw.get('variables') or {}
         self.__debug = kw.get('debug', False)
-        self._schema = get_schema_registry()
+        self._registry = get_schema_registry()
         self._component = component
         # Logger must be initialized by child classes
         self._logger = None
@@ -158,8 +156,8 @@ class Api(object):
         """
 
         services = []
-        for name in self._schema.get_service_names():
-            for version in self._schema.get(name).keys():
+        for name in self._registry.get_service_names():
+            for version in self._registry.get(name).keys():
                 services.append({'name': name, 'version': version})
 
         return services
@@ -185,17 +183,17 @@ class Api(object):
         if '*' in version:
             try:
                 version = VersionString(version).resolve(
-                    self._schema.get(name, {}).keys()
+                    self._registry.get(name, {}).keys()
                     )
                 # NOTE: Space is uses ad separator because service names allow
                 #       any character except spaces, \t or \n.
                 path = '{} {}'.format(name, version)
-                payload = self._schema.get(path, None, delimiter=" ")
+                payload = self._registry.get(path, None, delimiter=" ")
             except KatanaError:
                 payload = None
         else:
             path = '{} {}'.format(name, version)
-            payload = self._schema.get(path, None, delimiter=" ")
+            payload = self._registry.get(path, None, delimiter=" ")
 
         if not payload:
             error = 'Cannot resolve schema for Service: "{}" ({})'
@@ -203,7 +201,7 @@ class Api(object):
 
         return ServiceSchema(name, version, payload)
 
-    def log(self, value):
+    def log(self, value, level=INFO):
         """Write a value to KATANA logs.
 
         Given value is converted to string before being logged.
@@ -213,7 +211,7 @@ class Api(object):
         """
 
         if self._logger:
-            self._logger.debug(value_to_log_string(value))
+            self._logger.log(level, value_to_log_string(value))
 
     def done(self):
         """This method does nothing and returns False.
@@ -224,4 +222,6 @@ class Api(object):
 
         """
 
-        return False
+        raise ApiError(
+            'SDK does not support async call to end action: Api.done()'
+            )

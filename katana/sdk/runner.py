@@ -1,7 +1,7 @@
 """
 Python 2 SDK for the KATANA(tm) Framework (http://katana.kusanagi.io)
 
-Copyright (c) 2016-2017 KUSANAGI S.L. All rights reserved.
+Copyright (c) 2016-2018 KUSANAGI S.L. All rights reserved.
 
 Distributed under the MIT license.
 
@@ -24,14 +24,16 @@ import katana.payload
 import zmq.green
 
 from ..errors import KatanaError
+from ..logging import disable_logging
 from ..logging import setup_katana_logging
+from ..logging import SYSLOG_NUMERIC
 from ..utils import EXIT_ERROR
 from ..utils import EXIT_OK
 from ..utils import ipc
 from ..utils import tcp
 
 __license__ = "MIT"
-__copyright__ = "Copyright (c) 2016-2017 KUSANAGI S.L. (http://kusanagi.io)"
+__copyright__ = "Copyright (c) 2016-2018 KUSANAGI S.L. (http://kusanagi.io)"
 
 LOG = logging.getLogger(__name__)
 
@@ -242,6 +244,19 @@ class ComponentRunner(object):
                 help='Use full property names in payloads.',
                 ),
             click.option(
+                '-D', '--debug',
+                is_flag=True,
+                help='Enable component debug.',
+                ),
+            click.option(
+                '-L', '--log-level',
+                help=(
+                    'Enable a logging using a numeric Syslog severity '
+                    'value to set the level.'
+                    ),
+                type=click.IntRange(0, 7, clamp=True),
+                ),
+            click.option(
                 '-n', '--name',
                 required=True,
                 help='Component name.',
@@ -250,11 +265,6 @@ class ComponentRunner(object):
                 '-p', '--framework-version',
                 required=True,
                 help='KATANA framework version.',
-                ),
-            click.option(
-                '-q', '--quiet',
-                is_flag=True,
-                help='Disable all logs.',
                 ),
             click.option(
                 '-s', '--socket',
@@ -275,10 +285,6 @@ class ComponentRunner(object):
                 '-v', '--version',
                 required=True,
                 help='Component version.',
-                ),
-            click.option(
-                '-D', '--debug',
-                is_flag=True,
                 ),
             click.option(
                 '-V', '--var',
@@ -338,7 +344,19 @@ class ComponentRunner(object):
 
         """
 
-        self._args = kwargs
+        # Initialize component logging
+        log_level = kwargs.get('log_level')
+        if log_level in SYSLOG_NUMERIC:
+            setup_katana_logging(
+                self.server_cls.get_type(),
+                kwargs['name'],
+                kwargs['version'],
+                kwargs['framework_version'],
+                SYSLOG_NUMERIC[log_level],
+                )
+        else:
+            # No logs are printed when log-level is not available
+            disable_logging()
 
         # Standard input is read only when action name is given
         message = {}
@@ -355,6 +373,8 @@ class ComponentRunner(object):
             # Add action name to message
             message['action'] = kwargs['action']
 
+        self._args = kwargs
+
         # When compact mode is enabled use long payload field names
         if not self.compact_names:
             katana.payload.DISABLE_FIELD_MAPPINGS = True
@@ -367,17 +387,6 @@ class ComponentRunner(object):
             source_file=self.source_file,
             error_callback=self.__error_callback,
             )
-
-        # Initialize component logging only when `quiet` argument is False, or
-        # if an input message is given init logging only when debug is True
-        if not kwargs.get('quiet'):
-            setup_katana_logging(
-                self.server_cls.get_type(),
-                server.component_name,
-                server.component_version,
-                server.framework_version,
-                logging.DEBUG if self.debug else logging.INFO,
-                )
 
         LOG.debug('Using PID: "%s"', os.getpid())
 
@@ -428,7 +437,7 @@ class ComponentRunner(object):
                     LOG.error(err.strerror)
 
                 LOG.error('Component failed')
-            except Exception as exc:
+            except Exception:
                 exit_code = EXIT_ERROR
                 LOG.exception('Component failed')
 

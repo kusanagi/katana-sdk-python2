@@ -1,7 +1,7 @@
 """
 Python 2 SDK for the KATANA(tm) Framework (http://katana.kusanagi.io)
 
-Copyright (c) 2016-2017 KUSANAGI S.L. All rights reserved.
+Copyright (c) 2016-2018 KUSANAGI S.L. All rights reserved.
 
 Distributed under the MIT license.
 
@@ -35,7 +35,7 @@ from .serialization import pack
 from .serialization import unpack
 
 __license__ = "MIT"
-__copyright__ = "Copyright (c) 2016-2017 KUSANAGI S.L. (http://kusanagi.io)"
+__copyright__ = "Copyright (c) 2016-2018 KUSANAGI S.L. (http://kusanagi.io)"
 
 LOG = logging.getLogger(__name__)
 
@@ -89,7 +89,7 @@ class ComponentServer(object):
 
         self.__args = args
         self.__socket = None
-        self.__schema_registry = get_schema_registry()
+        self.__registry = get_schema_registry()
         self._pool = ThreadPool(cpu_count() * 5)
 
         self.callbacks = callbacks
@@ -207,7 +207,7 @@ class ComponentServer(object):
 
         LOG.debug('Updating schemas for Services ...')
         try:
-            self.__schema_registry.update_registry(unpack(stream))
+            self.__registry.update_registry(unpack(stream))
         except:
             LOG.exception('Failed to update schemas')
 

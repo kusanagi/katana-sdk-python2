@@ -1,7 +1,7 @@
 """
 Python 2 SDK for the KATANA(tm) Framework (http://katana.kusanagi.io)
 
-Copyright (c) 2016-2017 KUSANAGI S.L. All rights reserved.
+Copyright (c) 2016-2018 KUSANAGI S.L. All rights reserved.
 
 Distributed under the MIT license.
 
@@ -14,12 +14,13 @@ from __future__ import absolute_import
 import logging
 
 from ..errors import KatanaError
+from ..logging import INFO
 from ..logging import value_to_log_string
 from ..schema import SchemaRegistry
 from ..utils import Singleton
 
 __license__ = "MIT"
-__copyright__ = "Copyright (c) 2016-2017 KUSANAGI S.L. (http://kusanagi.io)"
+__copyright__ = "Copyright (c) 2016-2018 KUSANAGI S.L. (http://kusanagi.io)"
 
 
 class ComponentError(KatanaError):
@@ -162,7 +163,7 @@ class Component(object):
         self._runner.set_callbacks(self._callbacks)
         self._runner.run()
 
-    def log(self, value):
+    def log(self, value, level=INFO):
         """Write a value to KATANA logs.
 
         Given value is converted to string before being logged.
@@ -171,4 +172,4 @@ class Component(object):
 
         """
 
-        self.__logger.debug(value_to_log_string(value))
+        self.__logger.log(level, value_to_log_string(value))

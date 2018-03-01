@@ -6,6 +6,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.0.0] - 2018-03-01
+### Added
+- A configured file server must be available to make runtime calls
+  that send file parameters.
+- Added "log-level" support to runner.
+- Implemented support for the Transport API.
+
+### Changed
+- Calls to `Api.done()` raise an exception now.
+- Action schema entity's primary key field name is getted from the
+  entity instead of the action.
+- Removed `ActionSchema.get_primary_key()`
+- Removed the "quiet" CLI flag.
+- Logging changed to support the new Syslog based logging from KATANA.
+
 ## [1.3.0] - 2017-11-01
 ### Added
 - Support for action tags defined in the configuration.
